@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDPL Quality · Export Fixed</title>
+<!-- Font Awesome, Chart.js, SheetJS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<style>
+/* (All CSS unchanged from previous final version) */
+:root {
+  --bg: #f8fafc; --surface: #ffffff; --surface-hover: #f1f5f9;
+  --primary: #4f46e5; --primary-light: #818cf8; --primary-dark: #3730a3;
+  --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+  --text: #0f172a; --text-secondary: #64748b; --text-muted: #94a3b8;
+  --border: #e2e8f0; --border-light: #f1f5f9;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --radius: 12px; --radius-lg: 16px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); font-size: 14px; color: var(--text); background: var(--bg); line-height: 1.5; min-height: 100vh; }
+.app { max-width: 1400px; margin: 0 auto; padding: 24px 16px; }
+header { background: linear-gradient(135deg, var(--primary), #6366f1); color: white; padding: 28px 32px; border-radius: var(--radius-lg); margin-bottom: 24px; box-shadow: var(--shadow-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; }
+header p { opacity: 0.9; font-size: 0.95rem; margin-top: 4px; }
+.header-actions { display: flex; gap: 10px; }
+.header-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 500; backdrop-filter: blur(4px); transition: var(--transition); }
+.header-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-1px); }
+.nav-tabs { display: flex; background: var(--surface); padding: 6px; border-radius: var(--radius); box-shadow: var(--shadow-md); margin-bottom: 24px; gap: 4px; overflow-x: auto; }
+.nav-tab { padding: 10px 18px; border: none; background: transparent; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-radius: 8px; transition: var(--transition); white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.nav-tab:hover { background: var(--surface-hover); color: var(--text); }
+.nav-tab.active { background: var(--primary); color: white; box-shadow: 0 2px 4px rgb(79 70 229 / 0.3); }
+.section { display: none; animation: slideIn 0.3s ease; }
+.section.active { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.card { background: var(--surface); padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border); transition: var(--transition); }
+.card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.form-group { margin-bottom: 18px; }
+label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
+input, select, textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--surface); color: var(--text); transition: var(--transition); font-family: var(--font); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgb(79 70 229 / 0.15); }
+textarea { min-height: 80px; resize: vertical; }
+.complaint-id-box { background: linear-gradient(90deg, #eff6ff, #f0fdfa); padding: 10px 16px; border-radius: 8px; font-family: monospace; font-weight: 600; color: var(--primary); border-left: 3px solid var(--primary); margin-bottom: 20px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.capa-row { display: flex; gap: 10px; margin-top: 8px; }
+.capa-opt { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 13px; transition: var(--transition); display: flex; align-items: center; gap: 6px; }
+.capa-opt:hover { background: var(--surface-hover); }
+.capa-opt.active { border-color: var(--primary); background: #eef2ff; color: var(--primary); font-weight: 500; }
+.btn { padding: 10px 18px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--surface-hover); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.filter-bar { display: flex; gap: 10px; margin-bottom: 16px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; flex-wrap: wrap; align-items: center; }
+.filter-bar select, .filter-bar input { min-width: 160px; padding: 8px 10px; font-size: 12px; }
+.filter-bar .btn { margin-left: auto; }
+.sort-row { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.log-container { display: flex; flex-direction: column; gap: 12px; }
+.log-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: var(--transition); position: relative; overflow: hidden; }
+.log-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-md); }
+.log-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); border-radius: 0 4px 4px 0; }
+.log-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.log-id { font-size: 0.85rem; font-weight: 600; color: var(--primary); background: #eef2ff; padding: 4px 8px; border-radius: 6px; }
+.log-meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 12px; }
+.log-meta span { display: flex; align-items: center; gap: 4px; }
+.log-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; border-top: 1px dashed var(--border); padding-top: 10px; }
+.badge { padding: 3px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-pending { background: #fef3c7; color: #b45309; }
+.badge-yes { background: #dcfce7; color: #166534; }
+.badge-no { background: #fee2e2; color: #b91c1c; }
+.badge-closed { background: #e0e7ff; color: #3730a3; }
+.kpi { background: var(--surface); padding: 18px; border-radius: var(--radius); border: 1px solid var(--border); border-left: 4px solid var(--primary); box-shadow: var(--shadow-sm); transition: var(--transition); }
+.kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.kpi h4 { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 6px; font-weight: 500; }
+.kpi .val { font-size: 1.8rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.kpi .trend { font-size: 0.75rem; font-weight: 500; }
+.chart-box { height: 280px; position: relative; }
+.recent-table, .pivot-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.recent-table th, .pivot-table th { background: var(--surface-hover); padding: 12px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+.recent-table td, .pivot-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
+.recent-table tr:hover td, .pivot-table tr:hover td { background: #f8fafc; }
+.mom-table, .capa-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mom-table th { padding: 10px 8px; background: var(--surface-hover); color: var(--text-secondary); border-bottom: 2px solid var(--border); text-align: center; }
+.mom-table td { padding: 8px; border-bottom: 1px solid var(--border-light); text-align: center; }
+.mom-table td:first-child { text-align: left; font-weight: 500; color: var(--text-secondary); min-width: 200px; }
+.trend-up { color: var(--danger); font-weight: 600; }
+.trend-dn { color: var(--success); font-weight: 600; }
+.trend-eq { color: var(--text-muted); }
+.capa-table th { padding: 10px 8px; background: var(--surface-hover); color: var(--text-secondary); border-bottom: 2px solid var(--border); text-align: left; }
+.capa-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+.capa-table tr.closed-row { background: #f8fafc; opacity: 0.9; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(3px); }
+.modal { background: var(--surface); width: 100%; max-width: 700px; padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); animation: slideIn 0.2s ease; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); color: var(--text); padding: 12px 16px; border-radius: 10px; box-shadow: var(--shadow-lg); border-left: 4px solid var(--success); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-left-color: var(--danger); }
+.custom-sku-wrapper { margin-top: 8px; }
+.hidden { display: none; }
+.pivot-controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; align-items: flex-end; }
+.pivot-controls .form-group { min-width: 180px; margin-bottom: 0; }
+.attachment-badge { margin-left: 8px; font-size: 0.8rem; color: var(--primary); }
+.preview-images { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.preview-images img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+.capa-attachment-link { display: inline-block; margin-right: 8px; color: var(--primary); text-decoration: none; font-size: 12px; }
+.capa-attachment-link:hover { text-decoration: underline; }
+
+/* Loading overlay */
+.loading-overlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.65);display:none;justify-content:center;align-items:center;z-index:3000;flex-direction:column;gap:16px;backdrop-filter:blur(4px); }
+.loading-spinner { width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-text { color:white;font-weight:600;font-size:0.95rem;letter-spacing:0.3px; }
+
+/* ===== ADMIN UNLOCK BUTTON STATE ===== */
+#admin-unlock-btn.unlocked {
+  background: rgba(16,185,129,0.3);
+  border-color: rgba(16,185,129,0.6);
+}
+#admin-unlock-btn.unlocked i { color: #6ee7b7; }
+.admin-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4);
+  color: #6ee7b7; padding: 5px 12px; border-radius: 20px;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div>
+      <h1><i class="fa-solid fa-shield-halved"></i> SDPL Quality Management</h1>
+      <p>Track, resolve, and analyze product complaints with CAPA & closure</p>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" id="admin-unlock-btn" onclick="showAdminModal()"><i class="fa-solid fa-lock"></i> Admin</button>
+      <button class="header-btn" onclick="exportExcel()" id="export-btn" style="display:none;"><i class="fa-solid fa-file-excel"></i> Export Full Data</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('form')"><i class="fa-solid fa-plus-circle"></i> Register Complaint</button>
+    <button class="nav-tab admin-tab" onclick="switchTab('log')"   style="display:none;"><i class="fa-solid fa-list-check"></i> Complaint Log</button>
+    <button class="nav-tab admin-tab" onclick="switchTab('capa')"  style="display:none;"><i class="fa-solid fa-clipboard-check"></i> CAPA & Closure</button>
+    <button class="nav-tab admin-tab" onclick="switchTab('dash')"  style="display:none;"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+    <button class="nav-tab admin-tab" onclick="switchTab('mom')"   style="display:none;"><i class="fa-solid fa-chart-line"></i> Month-on-Month</button>
+  </nav>
+
+  <!-- REGISTER SECTION (identical to working version) -->
+  <section id="form" class="section active">
+    <div class="card">
+      <h2 style="margin-bottom:16px; font-weight:600;">New Complaint Registration</h2>
+      <div class="complaint-id-box" id="comp-id">SDPL / — / — / —</div>
+      <form id="compForm" onsubmit="submitComplaint(event)">
+        <div class="row">
+          <div class="form-group"><label>Complainant Name *</label><input id="f-name" required></div>
+          <div class="form-group"><label>Address / Location</label><input id="f-addr"></div>
+        </div>
+        <div class="row">
+          <div class="form-group"><label>Division *</label>
+            <select id="f-div" required onchange="updateComplaintID();"><option value="">Select Division</option></select>
+          </div>
+          <div class="form-group"><label>Product Category *</label>
+            <select id="f-cat" required onchange="loadSKUs();"><option value="">Select Category</option></select>
+          </div>
+          <div class="form-group">
+            <label>Product SKU</label>
+            <select id="f-sku" onchange="toggleCustomSKUInput()"><option value="">N/A (Logistics/General)</option></select>
+            <div id="custom-sku-container" class="custom-sku-wrapper hidden">
+              <input type="text" id="f-custom-sku" placeholder="Enter custom SKU" />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group"><label>Batch Number</label><input id="f-batch" placeholder="e.g., B2026041501"></div>
+          <div class="form-group"><label>MFG Date</label><input id="f-mfg" type="date"></div>
+          <div class="form-group"><label>Date of Complaint *</label><input id="f-date" type="date" required onchange="updateComplaintID()"></div>
+        </div>
+        <div class="row">
+          <div class="form-group"><label>Affected Quantity (units)</label><input id="f-qty" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="form-group"><label>Complaint Details *</label><textarea id="f-detail" required placeholder="Describe defect, damage, etc."></textarea></div>
+        <div class="form-group"><label>QC/Logistics Emails (Comma separated)</label><input id="f-emails" placeholder="qa@sdpl.com, logistics@sdpl.com"></div>
+        
+        <!-- Image Attachments -->
+        <div class="form-group">
+          <label><i class="fa-regular fa-image"></i> Attach Proof Images (optional)</label>
+          <input type="file" id="f-images" accept="image/*" multiple onchange="previewImages()">
+          <div id="image-preview" class="preview-images"></div>
+        </div>
+
+        <div style="margin-top:12px; padding-top:16px; border-top:1px dashed var(--border);">
+          <label>CAPA Status</label>
+          <div class="capa-row">
+            <div class="capa-opt" onclick="setCapa('yes')"><i class="fa-solid fa-check"></i> Received</div>
+            <div class="capa-opt" onclick="setCapa('no')"><i class="fa-solid fa-xmark"></i> Not Received</div>
+            <div class="capa-opt active" onclick="setCapa('pending')"><i class="fa-regular fa-clock"></i> Pending QC</div>
+          </div>
+        </div>
+        <input type="hidden" id="f-capa" value="pending">
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Register & Forward</button>
+          <button type="button" class="btn btn-secondary" onclick="clearForm()"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- COMPLAINT LOG SECTION -->
+  <section id="log" class="section">
+    <div class="filter-bar">
+      <select id="log-div" onchange="applyFilters()"><option value="">All Divisions</option></select>
+      <select id="log-cat" onchange="applyFilters()"><option value="">All Categories</option></select>
+      <select id="log-sku" onchange="applyFilters()"><option value="">All SKUs</option></select>
+      <input type="month" id="log-month" onchange="applyFilters()" style="max-width:180px;">
+      <select id="log-capa" onchange="applyFilters()"><option value="">All CAPA</option><option value="yes">Received</option><option value="no">Not Received</option><option value="pending">Pending</option></select>
+      <input type="text" id="log-search" placeholder="Search ID, Name..." style="flex:1" oninput="applyFilters()">
+      <div class="sort-row">
+        <label>Sort by:</label>
+        <select id="log-sort" onchange="applyFilters()">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="id-asc">ID (A→Z)</option>
+          <option value="id-desc">ID (Z→A)</option>
+        </select>
+      </div>
+    </div>
+    <div id="log-container" class="log-container"></div>
+    <div id="log-empty" style="text-align:center; padding:40px; color:var(--text-muted); display:none;"><i class="fa-solid fa-inbox"></i> No complaints match your filters</div>
+  </section>
+
+  <!-- CAPA & CLOSURE SECTION -->
+  <section id="capa" class="section">
+    <div class="filter-bar">
+      <select id="capa-div" onchange="renderCAPATable()"><option value="">All Divisions</option></select>
+      <select id="capa-status" onchange="renderCAPATable()"><option value="">All Status</option><option value="open">Open</option><option value="closed">Closed</option></select>
+      <button class="btn btn-secondary" onclick="renderCAPATable()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:16px;">CAPA & Closure Management</h3>
+      <div style="overflow-x:auto;">
+        <table class="capa-table" id="capa-table-body">
+          <thead><tr><th>Complaint No.</th><th>Date</th><th>Party</th><th>Category/SKU</th><th>CAPA</th><th>Root Cause</th><th>Correction</th><th>Corrective</th><th>Closed Date</th><th>Attach</th><th>Actions</th></tr></thead>
+          <tbody id="capa-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD SECTION -->
+  <section id="dash" class="section">
+    <div class="filter-bar" style="margin-bottom:20px;">
+      <select id="dash-year" onchange="applyDashboardFilters()" style="width:100px;"><option value="">All Years</option></select>
+      <select id="dash-div" onchange="applyDashboardFilters()"><option value="">All Divisions</option></select>
+      <select id="dash-cat" onchange="applyDashboardFilters()"><option value="">All Categories</option></select>
+      <button class="btn btn-secondary" onclick="resetDashboardFilters()" style="margin-left:auto;"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
+    </div>
+    <div class="grid-4">
+      <div class="kpi"><h4>Total Complaints</h4><div class="val" id="kpi-total">0</div></div>
+      <div class="kpi"><h4>This Month</h4><div class="val" id="kpi-month">0</div><div class="trend" id="kpi-trend"></div></div>
+      <div class="kpi"><h4>Closed Complaints</h4><div class="val" id="kpi-closed" style="color:var(--success)">0</div></div>
+      <div class="kpi"><h4>Open Complaints</h4><div class="val" id="kpi-open" style="color:var(--warning)">0</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><h3>Monthly Volume Trend</h3><div class="chart-box"><canvas id="chart-trend"></canvas></div></div>
+      <div class="card"><h3>Category Breakdown</h3><div class="chart-box"><canvas id="chart-cat"></canvas></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><h3>Division Distribution</h3><div class="chart-box"><canvas id="chart-div"></canvas></div></div>
+      <div class="card"><h3>Complaint Status (Open/Closed)</h3><div class="chart-box"><canvas id="chart-status"></canvas></div></div>
+    </div>
+    
+    <!-- Pivot Report -->
+    <div class="card" style="margin-top:20px;">
+      <h3 style="margin-bottom:16px;"><i class="fa-solid fa-table"></i> Custom Pivot Report</h3>
+      <div class="pivot-controls">
+        <div class="form-group">
+          <label>Row Dimension</label>
+          <select id="pivot-dimension" onchange="updatePivotReport()">
+            <option value="month">Month</option>
+            <option value="div">Division</option>
+            <option value="cat">Category</option>
+            <option value="sku">SKU</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Measure</label>
+          <select id="pivot-measure" onchange="updatePivotReport()">
+            <option value="count">Count of Complaints</option>
+            <option value="qty">Sum of Affected QTY</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Chart Type</label>
+          <select id="pivot-chart-type" onchange="updatePivotReport()">
+            <option value="bar">Bar Chart</option>
+            <option value="line">Line Chart</option>
+            <option value="pie">Pie Chart</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="updatePivotReport()"><i class="fa-solid fa-rotate"></i> Generate</button>
+      </div>
+      <div class="grid-2">
+        <div><div class="chart-box"><canvas id="pivot-chart"></canvas></div></div>
+        <div style="max-height:300px; overflow-y:auto;">
+          <table class="pivot-table" id="pivot-table">
+            <thead><tr id="pivot-header"></tr></thead>
+            <tbody id="pivot-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid-2" style="margin-top:20px;">
+      <div class="card"><h3>Top 5 SKUs by Complaints</h3><table class="pivot-table" id="top-sku-table"></table></div>
+      <div class="card"><h3>Recent Complaints</h3><table class="recent-table"><thead><tr><th>ID</th><th>Date</th><th>Party</th><th>Cat</th><th>CAPA</th><th>Status</th></tr></thead><tbody id="dash-recent"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- MONTH-ON-MONTH SECTION -->
+  <section id="mom" class="section">
+    <div class="filter-bar">
+      <select id="mom-year" onchange="renderMOM()"></select>
+      <select id="mom-cat" onchange="renderMOM()"><option value="">All Categories</option></select>
+      <button class="btn btn-secondary" onclick="exportExcel()"><i class="fa-solid fa-file-arrow-down"></i> Export</button>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <h3 style="margin-bottom:16px;">Monthly Comparison (Selected vs Previous Year)</h3>
+      <div class="chart-box"><canvas id="chart-mom"></canvas></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:16px;">SKU-Level MoM Change</h3>
+      <div style="overflow-x:auto;">
+        <table class="mom-table" id="mom-table">
+          <thead><tr id="mom-thead"></tr></thead>
+          <tbody id="mom-tbody"></tbody>
+        </table>
+      </div>
+      <div id="mom-empty" style="text-align:center; padding:30px; color:var(--text-muted); display:none;">No SKU data for selected filters</div>
+    </div>
+  </section>
+
+
+<!-- ADMIN PASSWORD MODAL -->
+<div class="modal-overlay" id="adminModal" onclick="if(event.target===this)closeModal('adminModal')">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-lock"></i> Admin Access</h3>
+      <button class="btn btn-secondary" onclick="closeModal('adminModal')">&times;</button>
+    </div>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:16px;">
+      Enter the admin password to access complaint logs, CAPA, dashboard and reports.
+    </p>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="admin-pw-input" placeholder="Enter admin password"
+             onkeydown="if(event.key==='Enter')checkAdminPassword()">
+    </div>
+    <div id="admin-pw-error" style="color:var(--danger);font-size:0.83rem;margin-bottom:12px;min-height:18px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary" onclick="checkAdminPassword()">
+        <i class="fa-solid fa-unlock"></i> Unlock
+      </button>
+      <button class="btn btn-secondary" onclick="closeModal('adminModal')">Cancel</button>
+    </div>
+    <div id="admin-logout-section" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed var(--border);">
+      <p style="color:var(--success);font-size:0.85rem;font-weight:600;margin-bottom:10px;">
+        <i class="fa-solid fa-circle-check"></i> Admin mode is active
+      </p>
+      <button class="btn btn-danger btn-sm" onclick="adminLogout()">
+        <i class="fa-solid fa-lock"></i> Lock Admin Mode
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Loading…</div>
+</div>
+</div>
+
+<!-- FULL EDIT MODAL -->
+<div class="modal-overlay" id="fullEditModal" onclick="if(event.target===this)closeModal('fullEditModal')">
+  <div class="modal">
+    <div class="modal-header"><h3>Edit Complaint Details</h3><button class="btn btn-secondary" onclick="closeModal('fullEditModal')">&times;</button></div>
+    <input type="hidden" id="edit-comp-id">
+    <div class="row">
+      <div class="form-group"><label>Name *</label><input id="edit-name" required></div>
+      <div class="form-group"><label>Address</label><input id="edit-addr"></div>
+    </div>
+    <div class="row">
+      <div class="form-group"><label>Division</label><select id="edit-div" required></select></div>
+      <div class="form-group"><label>Category</label><select id="edit-cat" required onchange="loadEditSKUs()"></select></div>
+      <div class="form-group">
+        <label>SKU</label>
+        <select id="edit-sku" onchange="toggleEditCustomSKU()"></select>
+        <div id="edit-custom-sku-container" class="custom-sku-wrapper hidden">
+          <input type="text" id="edit-custom-sku" placeholder="Custom SKU">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group"><label>Batch</label><input id="edit-batch"></div>
+      <div class="form-group"><label>MFG Date</label><input id="edit-mfg" type="date"></div>
+      <div class="form-group"><label>Complaint Date *</label><input id="edit-date" type="date" required></div>
+    </div>
+    <div class="row">
+      <div class="form-group"><label>Affected Qty</label><input id="edit-qty" type="number" step="1"></div>
+    </div>
+    <div class="form-group"><label>Details</label><textarea id="edit-detail" required></textarea></div>
+    <div class="form-group"><label>Emails</label><input id="edit-emails"></div>
+    <div class="form-group"><label>CAPA Status</label><select id="edit-capa"><option value="pending">Pending</option><option value="yes">Received</option><option value="no">Not Received</option></select></div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-primary" onclick="saveFullEdit()"><i class="fa-solid fa-save"></i> Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal('fullEditModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAPA MODAL -->
+<div class="modal-overlay" id="capaModal" onclick="if(event.target===this)closeModal('capaModal')">
+  <div class="modal">
+    <div class="modal-header"><h3>Update CAPA Details</h3><button class="btn btn-secondary" onclick="closeModal('capaModal')">&times;</button></div>
+    <input type="hidden" id="capa-comp-id">
+    <div class="form-group"><label>Root Cause Analysis</label><textarea id="capa-root" rows="3"></textarea></div>
+    <div class="form-group"><label>Correction Action taken</label><textarea id="capa-correction" rows="2"></textarea></div>
+    <div class="form-group"><label>Corrective Action taken</label><textarea id="capa-corrective" rows="2"></textarea></div>
+    <div class="form-group">
+      <label><i class="fa-regular fa-paperclip"></i> Attach Files (Images/PDF)</label>
+      <input type="file" id="capa-files-input" multiple accept="image/*,.pdf,application/pdf">
+      <div id="capa-existing-attachments" style="margin-top:5px; font-size:12px;"></div>
+      <div id="capa-new-preview" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;"></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="saveCAPADetails()"><i class="fa-solid fa-save"></i> Save CAPA</button>
+      <button class="btn btn-secondary" onclick="closeModal('capaModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> <span id="toast-msg"></span></div>
+
+<script>
+// ========== SUPABASE INIT ==========
+const SUPABASE_URL = 'https://mjutkoxwystmgijehqph.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qdXRrb3h3eXN0bWdpamVocXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNTU4NTAsImV4cCI6MjA5NjczMTg1MH0.rLugo3CHC00ZCqFy3AYudH4zYi86-azZMHYr01GIV08';
+const { createClient } = window.supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ========== COMPLETE CATS MAPPING ==========
+// ========== COMPLETE CATS MAPPING ==========
+const CATS = {
+  'Milk':['SAFAL STANDARD MILK (FG0101020)','SAFAL WHOLE MILK (FG0101030)','SAFAL FARM BUFFALO MILK (FG0101080)','SAFAL FAMILY MILK (FG0101060)','SAFAL HAPPY COW MILK (FG0101070)'],
+  'Mohi':['SAFAL MOHI 500 ML (FG0205010)'],
+  'Dahi':['SAFAL YOGHURT CUP 1 LTR (FG0202010)','SAFAL YOGHURT CUP ½ LTR (FG0202020)','SAFAL YOGHURT CUP 200ML (FG0202050)','SAFAL YOGHURT CUP 125ML (FG0202060)','SAFAL YOGHURT SPECIAL (FG0202070)','SAFAL PLAIN YOGHURT POUCH (FG0201030)','SAFAL PLAIN YOGHURT CUP 1 LTR (FG0203010)','SAFAL PLAIN YOGHURT CUP ½ LTR (FG0203020)','SAFAL YOGHURT POUCH (FG0201020)','SAFAL PLAIN YOGHURT 5 LTR BUCKET (FG0203030)','SAFAL PATALO DAHI 500 ML (FG0205020)'],
+  'JuJu Dhau':['SAFAL JUJU DHAU 1 LTR (FG0204010)','SAFAL JUJU DHAU 500ML (FG0204020)'],
+  'Butter':['SAFAL BUTTER ½ KG (FG0301020)','SAFAL BUTTER ¼ KG (FG0301040)','SAFAL BUTTER 100GM (FG0301100)'],
+  'Butter Chiplet':['SAFAL BUTTER CHIPLET 10GM (FG0301050)'],
+  'Nauni':['SAFAL NAUNI 1 KG (FG0303010)','SAFAL NAUNI 500 GMS (FG0303020)','WHITE BUTTER OPEN (FG0303030)','YELLOW BUTTER OPEN (FG0303040)','C WHITE BUTTER OPEN (FG0303050)'],
+  'Cow Cheese':['SAFAL COW CHEESE BLOCK (FG0802050)','SAFAL COW CHEESE 500GM (FG0802040)','SAFAL COW CHEESE 200GM (FG0802030)','SAFAL COW CHEESE 180GM (FG0802020)','SAFAL COW CHEESE 1KG (FG0802090)','SAFAL SOS COW CHEESE 200GM (FG0802170)','SAFAL SOS COW CHEESE 500GM (FG0802180)'],
+  'Mozzarella Cheese':['SAFAL MOZZARELLA CHEESE 1KG (FG0802070)','SAFAL MOZZARELLA CHEESE 200GM (FG0802080)','SAFAL MOZZARELLA CHEESE 500GM (FG0802100)','SAFAL MOZZARELLA PIZZA CHEESE 500GM (FG0802120)','SAFAL MOZZARELLA PIZZA CHEESE 1KG (FG0802110)','SAFAL MOZZARELLA PIZZA CHEESE 200GM (FG0802130)','SAFAL MOZZARELLA SHREDDED CHEESE 1KG (FG0802140)','SAFAL MOZZARELLA SHREDDED CHEESE 200GM (FG0802160)','SAFAL MOZZARELLA SHREDDED CHEESE 500GM (FG0802150)'],
+  'Cream':['SAFAL CREAM 1 LTR (FG0304010)','SAFAL CREAM ½ LTR (FG0304020)','SAFAL CREAM OPEN (FG0304030)','SAFAL CREAM 200ML (FG0304040)'],
+  'SMP / WMP':['SAFAL SKIMMED MILK POWDER (FG0501020)','DAIRY FARM SMP 25KG BAG (FG0501030)','DAIRY FARM SMP 1KGx25 BAG (FG0501040)','DAIRY PRIDE SMP 25KG BAG (FG0501050)','SWEEPING SKIMMED MILK POWDER (FG0505010)','SAFAL BAKERY SMP (FG0506010)','C SKIMMED MILK POWDER (FG0303060)','SAFAL WHOLE MILK POWDER (FG0503040)','SAFAL WHOLE MILK POWDER 5GM (FG0503050)','SAFAL WHOLE MILK POWDER 10GM (FG0503060)','CONDENSED MILK (FG0504010)'],
+  'Delite':['DELITE DAIRY WHITENER 400GM (FG0501070)','DELITE DAIRY WHITENER 800GM (FG0501080)','DELITE DAIRY WHITENER 3GM (FG0501090)','DELITE DAIRY PRIDE FULL CREAM MILK POWDER 1KG (FG0507020)','SAFAL DAIRY WHITENER (FG0502030)','MILK CRUMB (FG0502040)'],
+  'Ghee':['SAFAL GHEE 1LTR POLY (FG0302010)','SAFAL GHEE ½ LTR POLY (FG0302020)','SAFAL GHEE 1 LTR JAR (FG0302030)','SAFAL GHEE ½ LTR JAR (FG0302040)','SAFAL GHEE 20LTR BUCKET (FG0302050)','SAFAL GHEE 10LTR BUCKET (FG0302060)','DAIRY FAT SAFAL GHEE (FG0302070)'],
+  'Cow Ghee':['SAFAL COW GHEE 1/2 LTR JAR (FG0302090)'],
+  'Paneer':['SAFAL PANEER 1 KG (FG0401010)','SAFAL PANEER ½ KG (FG0401020)','SAFAL PANEER 200GM (FG0401050)','SAFAL PANEER 2KG (FG0401030)'],
+  'Safal Ice Cream':['SAFAL ½ LTR BUTTERSCOTCH (FG0601010)','SAFAL ½ LTR CHOCOLATE (FG0601020)','SAFAL ½ LTR STRAWBERRY (FG0601030)','SAFAL ½ LTR VANILLA (FG0601040)','SAFAL 100ML CUP BUTTERSCOTCH (FG0602010)','SAFAL 100ML CUP CHOCOLATE (FG0602020)','SAFAL 100ML CUP STRAWBERRY (FG0602030)','SAFAL 100ML CUP VANILLA (FG0602040)','SAFAL CHOCOBAR (FG0603010)','SAFAL KULFEE (FG0603020)','SAFAL 4 LTR BUTTERSCOTCH (FG0604010)','SAFAL 4 LTR CHOCOLATE (FG0604020)','SAFAL 4 LTR STRAWBERRY (FG0604030)','SAFAL 4 LTR VANILLA (FG0604040)','SAFAL POPS MANGO (FG0603030)','SAFAL POPS ORANGE (FG0603040)','SAFAL POPS LITCHI (FG0603050)','SAFAL POPS PINEAPPLE (FG0603060)'],
+  'Lovebirds Ice Cream':[
+    'LOVEBIRDS POPS KACHHA MANGO (FG0701510)','LOVEBIRDS POPS LITCHI (FG0701520)','LOVEBIRDS POPS MANGO (FG0701530)','LOVEBIRDS POPS MILKY BITES (FG0701540)','LOVEBIRDS POPS ORANGE (FG0701550)',
+    'LOVEBIRDS BIG CUP 21 LOVE (FG0702010)','LOVEBIRDS BIG CUP BUTTERSCOTCH (FG0702020)','LOVEBIRDS BIG CUP CHOCOLATE (FG0702040)','LOVEBIRDS BIG CUP KESHAR PISTA (FG0702090)','LOVEBIRDS BIG CUP STRAWBERRY (FG0702110)','LOVEBIRDS BIG CUP VANILLA (FG0702120)',
+    'LOVEBIRDS CHOCO NUTTY BAR (FG0703140)','LOVEBIRDS CHOCOBAR CHOCOLATE (FG0703240)','LOVEBIRDS MINI CHOCOBAR CHOCOLATE (FG0703340)',
+    'LOVEBIRDS 4 LTR 21 LOVE (FG0704010)','LOVEBIRDS 4 LTR BUTTERSCOTCH (FG0704020)','LOVEBIRDS 4 LTR CHOCO ALMOND FUDGE (FG0704030)','LOVEBIRDS 4 LTR CHOCOLATE (FG0704040)','LOVEBIRDS 4 LTR CHOCOLATE CHOCOCHIPS (FG0704050)','LOVEBIRDS 4 LTR FRESH PINEAPPLE (FG0704060)','LOVEBIRDS 4 LTR FRUIT BONANZA (FG0704070)','LOVEBIRDS 4 LTR KAJU KISHMISH (FG0704080)','LOVEBIRDS 4 LTR KESHAR PISTA (FG0704090)','LOVEBIRDS 4 LTR MANGO (FG0704100)','LOVEBIRDS 4 LTR STRAWBERRY (FG0704110)','LOVEBIRDS 4 LTR VANILLA (FG0704120)','LOVEBIRDS 4 LTR VANILLA STRAWBERRY (FG0704220)','LOVEBIRDS 4 LTR VANILLA CHOCOLATE (FG0704230)','LOVEBIRDS 4 LTR COOKIES AND CREAM (FG0704140)','LOVEBIRDS 4 LTR BLUEBERRIES (FG0704255)','LOVEBIRDS 4 LTR BELGIAN CHOCOLATE (FG0704257)',
+    'LOVEBIRDS 500 ML 21 LOVE (FG0705010)','LOVEBIRDS 500 ML BUTTERSCOTCH (FG0705020)','LOVEBIRDS 500 ML CHOCOLATE (FG0705040)','LOVEBIRDS 500 ML CHOCOLATE CHOCOCHIPS (FG0705050)','LOVEBIRDS 500 ML FRESH PINEAPPLE (FG0705060)','LOVEBIRDS 500 ML KESHAR PISTA (FG0705090)','LOVEBIRDS 500 ML STRAWBERRY (FG0705110)','LOVEBIRDS 500 ML VANILLA (FG0705120)','LOVEBIRDS 500 ML FRESH MANGO (FG0705140)',
+    'LOVEBIRDS TRIO BUTTERSCOTCH (FG0706020)','LOVEBIRDS TRIO CHOCOLATE (FG0706040)','LOVEBIRDS TRIO STRAWBERRY (FG0706110)',
+    'LOVEBIRDS WAVY CHOCOLATE (FG0707040)','LOVEBIRDS WAVY STRAWBERRY (FG0707110)',
+    'LOVEBIRDS KULFI COOLER PISTA (FG0708410)','LOVEBIRDS KULFI COOLER SAFFRON (FG0708420)',
+    'LOVEBIRDS 5LTR STRAWBERRY (FG0709010)','LOVEBIRDS 5LTR BUTTERSCOTCH (FG0709020)','LOVEBIRDS 5LTR CHOCOLATE (FG0709040)','LOVEBIRDS 5LTR VANILLA (FG0709120)',
+    'LOVEBIRDS CELEBRATION PACK 21 LOVE (FG0710010)','LOVEBIRDS CELEBRATION PACK BUTTERSCOTCH (FG0710020)','LOVEBIRDS CELEBRATION PACK CHOCOLATE (FG0710040)','LOVEBIRDS CELEBRATION PACK STRAWBERRY (FG0710110)','LOVEBIRDS CELEBRATION PACK VANILA (FG0710120)',
+    'LOVEBIRDS LOVELY BLACKFOREST (FG0711120)',
+    'VANILLICIOUS - SINGLE SCOOP (PFG0000001)','STRAWBERRY FANTASY - SINGLE SCOOP (PFG0000002)','CREAMY BUTTERSCOTCH - SINGLE SCOOP (PFG0000003)','MANGO BLISS - SINGLE SCOOP (PFG0000004)','21 LOVEBIRDS - SINGLE SCOOP (PFG0000005)',
+    'VANILLA STRAWBERRY DUET - SINGLE SCOOP (PFG0000006)','VANILLA CHOCOLATE DUET - SINGLE SCOOP (PFG0000007)','FRUITY COOKIE - SINGLE SCOOP (PFG0000009)','ELAICHI KULFI - SINGLE SCOOP (PFG0000010)','CHOCOLATE MUDDY - SINGLE SCOOP (PFG0000013)','CHOCOLATE CHIP DELIGHT - SINGLE SCOOP (PFG0000014)','COOKIES AND CREAM - SINGLE SCOOP (PFG0000015)','BLUEBERRIES - SINGLE SCOOP (PFG0000016)','MANGO RASPBERRY - SINGLE SCOOP (PFG0000017)','BELGIAN CHOCOLATE - SINLGE SCOOP (PFG0000018)','COFFEE FUDGE - SINGLE SCOOP (PFG0000019)','JALEBI RABRI - SINGLE SCOOP (PFG0000020)',
+    'CREAMY BUTTERSCOTCH - DOUBLE SCOOP (PFG0000053)','21 LOVEBIRDS - DOUBLE SCOOP (PFG0000055)','VANILLA CHOCOLATE DUET - DOUBLE SCOOP (PFG0000057)','CHOCOLATE CHIP DELIGHT - DOUBLE SCOOP (PFG0000064)','COOKIES AND CREAM - DOUBLE SCOOP (PFG0000065)','BLUEBERRIES - DOUBLE SCOOP (PFG0000066)','MANGO RASPBERRY - DOUBLE SCOOP (PFG0000067)','COFFEE FUDGE - DOUBLE SCOOP (PFG0000069)','ELAICHI KULFI - DOUBLE SCOOP (PFG0000060)',
+    'CREAMY BUTTERSCOTCH - 500 ML (PFG0000103)','COOKIES AND CREAM - 500 ML (PFG0000115)','BLUEBERRIES - 500 ML (PFG0000116)','BELGIAN CHOCOLATE - 500 ML (PFG0000118)','COFFEE FUDGE - 500 ML (PFG0000119)','MANGO BLISS - 500 ML (PFG0000104)','ELAICHI KULFI - 500 ML (PFG0000110)','CHOCOLATE CHIP DELIGHT - 500 ML (PFG0000114)',
+    'CHOCO ALMOND FUDGE - SINGLE SCOOP (PFG0000072)'
+  ],
+  'Rush':['RUSH (FG0900002)']
+};
+
+// ========== GLOBAL STATE ==========
+let complaints = [];
+let charts = {};
+let capaVal = 'pending';
+let pendingImageFiles = [];   // File objects, uploaded to Supabase Storage on submit
+let pendingCAPAFiles  = [];   // File objects, uploaded to Supabase Storage on save
+let currentDashboardData = [];
+let isLoading = false;
+
+// ========== HELPERS ==========
+function divAbbr(d){const m={'UNIT A':'UA','UNIT B':'UB','COOPERATIVE CHANNEL':'CC','CONFECTIONERY CHANNEL':'CF','LINE 2':'L2','INGREDIENT BUSINESS':'IB','CONVERSION':'CV','LOVEBIRDS':'LB','PARLOR':'PL','SDC':'SD'};return m[d]||d.substring(0,3).toUpperCase();}
+
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.className='toast show '+(type==='error'?'error':'');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.className='toast',4000);
+}
+function setLoading(on, msg='Loading…'){
+  const overlay=document.getElementById('loading-overlay');
+  const txt=document.getElementById('loading-text');
+  overlay.style.display=on?'flex':'none';
+  if(txt) txt.textContent=msg;
+}
+function badge(v){return v==='yes'?'<span class="badge badge-yes">Received</span>':v==='no'?'<span class="badge badge-no">Not Received</span>':'<span class="badge badge-pending">Pending</span>';}
+function closeModal(id){document.getElementById(id).style.display='none';}
+function groupBy(arr,key){return arr.reduce((acc,c)=>{acc[c[key]]=(acc[c[key]]||0)+1;return acc;},{});}
+function palette(n){const base=['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316','#14b8a6','#a855f7'];return Array.from({length:n},(_,i)=>base[i%base.length]);}
+function updateChart(id,type,labels,datasets){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById('chart-'+id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type!=='line'}}}});}
+
+// ========== SUPABASE: GET NEXT SEQUENTIAL ID ==========
+async function getNextCompNum(divAbbr, year) {
+  // Count existing complaints with same div+year prefix to derive next number
+  const prefix = `SDPL/${divAbbr}/${year}/`;
+  const { count, error } = await sb.from('complaints')
+    .select('*', { count: 'exact', head: true })
+    .like('comp_num', prefix + '%');
+  if (error) throw error;
+  return String((count || 0) + 1).padStart(4, '0');
+}
+
+// ========== SUPABASE: FILE UPLOAD ==========
+async function uploadFiles(files, folder) {
+  const results = [];
+  for (const file of files) {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${folder}/${Date.now()}_${safeName}`;
+    const { error } = await sb.storage.from('complaint-files').upload(path, file, { upsert: false });
+    if (error) throw new Error(`Upload failed for ${file.name}: ${error.message}`);
+    const { data: urlData } = sb.storage.from('complaint-files').getPublicUrl(path);
+    results.push({ name: file.name, url: urlData.publicUrl, type: file.type, path });
+  }
+  return results;
+}
+
+// ========== SUPABASE: LOAD ALL COMPLAINTS ==========
+async function loadComplaints() {
+  setLoading(true, 'Loading complaints from database…');
+  try {
+    const { data, error } = await sb.from('complaints')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    complaints = data.map(dbToLocal);
+    applyFilters();
+    updateSKUFilterOptions();
+    renderCAPATable();
+    applyDashboardFilters();
+    renderMOM();
+  } catch(err) {
+    console.error(err);
+    showToast('Failed to load data: ' + err.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// DB row → local JS object
+function dbToLocal(c) {
+  return {
+    compNum:         c.comp_num,
+    name:            c.name,
+    addr:            c.addr || '',
+    div:             c.div,
+    cat:             c.cat,
+    sku:             c.sku,
+    batch:           c.batch || 'N/A',
+    mfg:             c.mfg || '',
+    date:            c.date,
+    affectedQty:     c.affected_qty || 0,
+    detail:          c.detail,
+    capa:            c.capa || 'pending',
+    remarks:         c.remarks || '',
+    emails:          c.emails || '',
+    images:          c.images || [],
+    capaAttachments: c.capa_attachments || [],
+    rootCause:       c.root_cause || '',
+    correction:      c.correction || '',
+    corrective:      c.corrective || '',
+    closedDate:      c.closed_date || null,
+    status:          c.status || (c.closed_date ? 'closed' : 'open'),
+    createdAt:       c.created_at,
+  };
+}
+
+// ========== FORM HELPERS ==========
+function updateComplaintID(){
+  const div=document.getElementById('f-div').value;
+  const d=document.getElementById('f-date').value;
+  const year=d?new Date(d).getFullYear():'YYYY';
+  const abbr=div?divAbbr(div):'DIV';
+  document.getElementById('comp-id').textContent=`SDPL/${abbr}/${year}/NEW`;
+}
+function loadSKUs(){
+  const cat=document.getElementById('f-cat').value;
+  const sel=document.getElementById('f-sku');
+  sel.innerHTML='<option value="">N/A (Logistics/General)</option>';
+  if(cat&&CATS[cat]) CATS[cat].forEach(s=>sel.add(new Option(s,s)));
+  sel.add(new Option('Other (specify)','__OTHER__'));
+  toggleCustomSKUInput();
+}
+function toggleCustomSKUInput(){
+  const sel=document.getElementById('f-sku');
+  const cont=document.getElementById('custom-sku-container');
+  if(sel.value==='__OTHER__'){cont.classList.remove('hidden');document.getElementById('f-custom-sku').required=true;}
+  else{cont.classList.add('hidden');document.getElementById('f-custom-sku').required=false;document.getElementById('f-custom-sku').value='';}
+}
+function setCapa(v){
+  capaVal=v;
+  document.getElementById('f-capa').value=v;
+  document.querySelectorAll('.capa-opt').forEach((el,i)=>el.classList.toggle('active',(i===0&&v==='yes')||(i===1&&v==='no')||(i===2&&v==='pending')));
+}
+function previewImages(){
+  const files=document.getElementById('f-images').files;
+  const preview=document.getElementById('image-preview');
+  preview.innerHTML=''; pendingImageFiles=[];
+  Array.from(files).forEach(f=>{
+    pendingImageFiles.push(f);
+    const img=document.createElement('img');
+    img.src=URL.createObjectURL(f);
+    preview.appendChild(img);
+  });
+}
+
+// ========== SUBMIT COMPLAINT ==========
+async function submitComplaint(e){
+  e.preventDefault();
+  const btn=e.target.querySelector('button[type="submit"]');
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+
+  try {
+    const div  = document.getElementById('f-div').value;
+    const date = document.getElementById('f-date').value;
+    const year = new Date(date).getFullYear();
+    const abbr = divAbbr(div);
+
+    // Validate SKU
+    let skuValue = document.getElementById('f-sku').value === '__OTHER__'
+      ? document.getElementById('f-custom-sku').value.trim()
+      : (document.getElementById('f-sku').value || 'N/A');
+    if(document.getElementById('f-sku').value==='__OTHER__' && !skuValue){
+      showToast('Please enter a custom SKU','error'); return;
+    }
+
+    // Sequential ID — re-check under optimistic lock to avoid duplicates
+    const seq = await getNextCompNum(abbr, year);
+    const compNum = `SDPL/${abbr}/${year}/${seq}`;
+
+    // Upload images to Supabase Storage
+    let imageRecords = [];
+    if(pendingImageFiles.length > 0){
+      setLoading(true, `Uploading ${pendingImageFiles.length} image(s)…`);
+      imageRecords = await uploadFiles(pendingImageFiles, `complaints/${compNum}/images`);
+    }
+
+    const row = {
+      comp_num:        compNum,
+      name:            document.getElementById('f-name').value,
+      addr:            document.getElementById('f-addr').value,
+      div,
+      cat:             document.getElementById('f-cat').value,
+      sku:             skuValue,
+      batch:           document.getElementById('f-batch').value || 'N/A',
+      mfg:             document.getElementById('f-mfg').value || null,
+      date,
+      affected_qty:    parseFloat(document.getElementById('f-qty').value) || 0,
+      detail:          document.getElementById('f-detail').value,
+      capa:            capaVal,
+      remarks:         '',
+      emails:          document.getElementById('f-emails').value,
+      images:          imageRecords,
+      capa_attachments:[],
+      root_cause:      '',
+      correction:      '',
+      corrective:      '',
+      closed_date:     null,
+      status:          'open',
+    };
+
+    setLoading(true, 'Saving complaint…');
+    const { data: inserted, error } = await sb.from('complaints').insert([row]).select().single();
+    if(error) throw error;
+
+    complaints.unshift(dbToLocal(inserted));
+    if(row.emails) triggerEmail(dbToLocal(inserted), row.emails);
+    showToast(`✅ ${compNum} registered successfully`);
+    clearForm();
+    switchTab('log');
+    applyFilters();
+    updateSKUFilterOptions();
+  } catch(err){
+    console.error(err);
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> Register & Forward';
+    setLoading(false);
+  }
+}
+
+function skuDisplayName(sku) {
+  // Strip product code in parentheses e.g. "SAFAL CHOCOBAR (FG0603010)" → "SAFAL CHOCOBAR"
+  if (!sku) return 'N/A';
+  return sku.replace(/\s*\([A-Z0-9]+\)\s*$/, '').trim();
+}
+
+function skuIntroLine(sku, cat) {
+  // Generate a natural intro sentence based on the SKU/category
+  const name = skuDisplayName(sku);
+  if (!sku || sku === 'N/A') return `a complaint under the ${cat || 'General'} category`;
+  return `a product complaint regarding ${name}`;
+}
+
+function triggerEmail(c, to) {
+  const skuClean = skuDisplayName(c.sku);
+  const introLine = skuIntroLine(c.sku, c.cat);
+  const today    = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+  const mfgFmt   = c.mfg  ? new Date(c.mfg).toLocaleDateString('en-GB',  { day:'2-digit', month:'long', year:'numeric' }) : 'Not Specified';
+  const dateFmt  = c.date ? new Date(c.date).toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' }) : 'Not Specified';
+
+  // Build image list as plain URLs if available, otherwise omit section
+  let imageSection = '';
+  if (c.images && c.images.length) {
+    const links = c.images.map((img, i) => `    ${i+1}. ${img.url}`).join('\n');
+    imageSection = `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  ATTACHED IMAGE EVIDENCE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  Please refer to the following link(s) for photographic evidence\n  of the reported complaint:\n\n${links}\n`;
+  }
+
+  const subject = `[Product Complaint — CAPA Required] Ref: ${c.compNum} | ${skuClean}`;
+
+  const body = `Dear Sir/Madam,
+
+Subject: Product Complaint Notification and Request for Corrective and Preventive Action (CAPA)
+Reference No.: ${c.compNum}
+Date: ${today}
+
+This is to formally notify you of ${introLine} received by Sujal Dairy Pvt. Ltd. The matter requires your immediate attention and a formal CAPA response.
+
+Kindly review the complaint details provided below and take the necessary actions as outlined at the end of this letter.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  COMPLAINT DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Reference No.      : ${c.compNum}
+  Complaint Date     : ${dateFmt}
+  Division           : ${c.div}
+  Product Category   : ${c.cat}
+  Product (SKU)      : ${skuClean}
+  Batch Number       : ${c.batch || 'Not Specified'}
+  Manufacturing Date : ${mfgFmt}
+  Affected Quantity  : ${c.affectedQty} unit(s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  COMPLAINANT INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Complainant Name   : ${c.name}
+  Address / Location : ${c.addr || 'Not Specified'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  NATURE OF COMPLAINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${c.detail}
+${imageSection}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  REQUIRED ACTION — CAPA REQUEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You are hereby requested to undertake the following actions in
+response to the above complaint:
+
+  1. INVESTIGATION
+     Conduct a thorough investigation into the reported issue and
+     identify the root cause of the defect or non-conformance.
+
+  2. IMMEDIATE CORRECTION
+     Implement correction actions without delay to address and
+     contain the reported problem.
+
+  3. CORRECTIVE & PREVENTIVE ACTION (CAPA)
+     Develop and implement a formal CAPA plan to prevent recurrence
+     of the issue. The CAPA must include:
+       a) Root Cause Analysis
+       b) Correction taken
+       c) Corrective Action with timeline
+       d) Supporting documents / evidence
+
+  4. CAPA SUBMISSION DEADLINE
+     Please submit your complete CAPA report within 7 (seven)
+     working days from the date of this notice — by
+     ${(() => { const d = new Date(); d.setDate(d.getDate()+10); return d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}); })()}.
+
+Failure to respond within the stipulated period may result in
+escalation to senior management.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONTACT FOR QUERIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For any queries or clarifications regarding this complaint,
+please contact the undersigned directly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Yours sincerely,
+
+Bharat Koirala
+Sujal Dairy Pvt. Ltd. (SDPL)
+Date: ${today}
+Reference: ${c.compNum}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This is an official communication from Sujal Dairy Pvt. Ltd.
+Please do not discard this notice. Retain for your records.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  window.open(
+    `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  );
+}
+function clearForm(){
+  ['f-name','f-addr','f-batch','f-detail','f-emails'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-qty').value='0';
+  ['f-div','f-cat','f-sku'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-mfg').value='';
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('f-images').value='';
+  document.getElementById('image-preview').innerHTML='';
+  pendingImageFiles=[];
+  document.getElementById('custom-sku-container').classList.add('hidden');
+  setCapa('pending'); updateComplaintID();
+}
+
+// ========== NAVIGATION ==========
+function switchTab(t){
+  document.querySelectorAll('.nav-tab').forEach((el,i)=>{const tabs=['form','log','capa','dash','mom'];el.classList.toggle('active',tabs[i]===t);});
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(t).classList.add('active');
+  if(t==='log')    applyFilters();
+  if(t==='capa')   renderCAPATable();
+  if(t==='dash')   applyDashboardFilters();
+  if(t==='mom')    renderMOM();
+}
+
+// ========== COMPLAINT LOG ==========
+let logFilters={div:'',cat:'',sku:'',month:'',capa:'',search:'',sort:'newest'};
+function applyFilters(){
+  logFilters.div    = document.getElementById('log-div').value;
+  logFilters.cat    = document.getElementById('log-cat').value;
+  logFilters.sku    = document.getElementById('log-sku').value;
+  logFilters.month  = document.getElementById('log-month').value;
+  logFilters.capa   = document.getElementById('log-capa').value;
+  logFilters.search = document.getElementById('log-search').value.toLowerCase();
+  logFilters.sort   = document.getElementById('log-sort').value;
+  let filtered = complaints.filter(c=>{
+    if(logFilters.div   && c.div!==logFilters.div)   return false;
+    if(logFilters.cat   && c.cat!==logFilters.cat)   return false;
+    if(logFilters.sku   && c.sku!==logFilters.sku)   return false;
+    if(logFilters.month && !c.date.startsWith(logFilters.month)) return false;
+    if(logFilters.capa  && c.capa!==logFilters.capa) return false;
+    if(logFilters.search && !(c.compNum+c.name+c.sku+c.cat).toLowerCase().includes(logFilters.search)) return false;
+    return true;
+  });
+  filtered.sort((a,b)=>{
+    if(logFilters.sort==='oldest')  return new Date(a.date)-new Date(b.date);
+    if(logFilters.sort==='id-asc')  return a.compNum.localeCompare(b.compNum);
+    if(logFilters.sort==='id-desc') return b.compNum.localeCompare(a.compNum);
+    return new Date(b.date)-new Date(a.date);
+  });
+  renderLog(filtered);
+}
+function renderLog(data){
+  const cont=document.getElementById('log-container');
+  const empty=document.getElementById('log-empty');
+  if(!data||!data.length){cont.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  cont.innerHTML=data.map(c=>{
+    const imgBadge = c.images&&c.images.length ? `<span class="attachment-badge"><i class="fa-regular fa-image"></i> ${c.images.length}</span>` : '';
+    const viewImgBtn = c.images&&c.images.length ? `<button class="btn btn-sm btn-secondary" onclick="viewImages('${c.compNum}')"><i class="fa-regular fa-images"></i></button>` : '';
+    const safeEmails = (c.emails||'').replace(/'/g,"\'");
+    return `<div class="log-card">
+      <div class="log-header"><span class="log-id">${c.compNum}</span>${badge(c.capa)} ${imgBadge}</div>
+      <div style="font-weight:600;">${c.name}</div>
+      <div class="log-meta">
+        <span><i class="fa-solid fa-box"></i> ${c.cat} / ${c.sku}</span>
+        <span>Batch: ${c.batch}</span><span>MFG: ${c.mfg||'—'}</span>
+        <span>Qty: ${c.affectedQty}</span><span>${c.date}</span>
+      </div>
+      <div style="margin-top:8px;">${(c.detail||'').substring(0,120)}${c.detail&&c.detail.length>120?'…':''}</div>
+      <div class="log-actions">
+        ${viewImgBtn}
+        <button class="btn btn-sm btn-secondary" onclick="triggerEmail(complaints.find(x=>x.compNum==='${c.compNum}'),'${safeEmails}')"><i class="fa-solid fa-envelope"></i></button>
+        <button class="btn btn-sm btn-primary" onclick="openFullEdit('${c.compNum}')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+        <button class="btn btn-sm btn-danger"  onclick="delComp('${c.compNum}')"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function viewImages(compNum){
+  const c=complaints.find(x=>x.compNum===compNum);
+  if(!c||!c.images||!c.images.length) return;
+  const win=window.open('','_blank');
+  const imgs=c.images.map(img=>`<div style="text-align:center"><img src="${img.url}" style="max-width:90%;max-height:80vh;border:2px solid #eee;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-radius:8px;"><div style="font-size:12px;color:#666;margin-top:4px;">${img.name}</div></div>`).join('');
+  win.document.write(`<html><head><title>${compNum} – Images</title><style>body{background:#1e1e1e;display:flex;flex-wrap:wrap;gap:16px;padding:24px;justify-content:center;font-family:sans-serif;}</style></head><body>${imgs}</body></html>`);
+}
+async function delComp(id){
+  if(!confirm('Permanently delete complaint '+id+'?')) return;
+  try {
+    const {error}=await sb.from('complaints').delete().eq('comp_num',id);
+    if(error) throw error;
+    complaints=complaints.filter(c=>c.compNum!==id);
+    applyFilters(); updateSKUFilterOptions(); showToast('Deleted','error');
+  } catch(err){ showToast('Delete failed: '+err.message,'error'); }
+}
+
+// ========== FULL EDIT ==========
+function openFullEdit(compNum){
+  const c=complaints.find(x=>x.compNum===compNum); if(!c) return;
+  document.getElementById('edit-comp-id').value=c.compNum;
+  document.getElementById('edit-name').value=c.name;
+  document.getElementById('edit-addr').value=c.addr||'';
+  document.getElementById('edit-div').value=c.div;
+  document.getElementById('edit-cat').value=c.cat;
+  loadEditSKUs(c.sku);
+  document.getElementById('edit-batch').value=c.batch;
+  document.getElementById('edit-mfg').value=c.mfg||'';
+  document.getElementById('edit-date').value=c.date;
+  document.getElementById('edit-qty').value=c.affectedQty;
+  document.getElementById('edit-detail').value=c.detail;
+  document.getElementById('edit-emails').value=c.emails||'';
+  document.getElementById('edit-capa').value=c.capa;
+  document.getElementById('fullEditModal').style.display='flex';
+}
+function loadEditSKUs(preselected=null){
+  const cat=document.getElementById('edit-cat').value;
+  const sel=document.getElementById('edit-sku');
+  sel.innerHTML='<option value="">N/A</option>';
+  if(cat&&CATS[cat]) CATS[cat].forEach(s=>sel.add(new Option(s,s)));
+  sel.add(new Option('Other (specify)','__OTHER__'));
+  if(preselected){
+    if([...sel.options].some(o=>o.value===preselected)) sel.value=preselected;
+    else{sel.value='__OTHER__';document.getElementById('edit-custom-sku').value=preselected;}
+  }
+  toggleEditCustomSKU();
+}
+function toggleEditCustomSKU(){
+  const sel=document.getElementById('edit-sku');
+  const cont=document.getElementById('edit-custom-sku-container');
+  if(sel.value==='__OTHER__'){cont.classList.remove('hidden');document.getElementById('edit-custom-sku').required=true;}
+  else{cont.classList.add('hidden');document.getElementById('edit-custom-sku').required=false;}
+}
+async function saveFullEdit(){
+  const id=document.getElementById('edit-comp-id').value;
+  const idx=complaints.findIndex(c=>c.compNum===id); if(idx===-1) return;
+  const skuVal=document.getElementById('edit-sku').value==='__OTHER__'
+    ?document.getElementById('edit-custom-sku').value.trim()
+    :(document.getElementById('edit-sku').value||'N/A');
+  if(document.getElementById('edit-sku').value==='__OTHER__'&&!skuVal){showToast('Enter custom SKU','error');return;}
+
+  const updates={
+    name:         document.getElementById('edit-name').value,
+    addr:         document.getElementById('edit-addr').value,
+    div:          document.getElementById('edit-div').value,
+    cat:          document.getElementById('edit-cat').value,
+    sku:          skuVal,
+    batch:        document.getElementById('edit-batch').value,
+    mfg:          document.getElementById('edit-mfg').value||null,
+    date:         document.getElementById('edit-date').value,
+    affected_qty: parseFloat(document.getElementById('edit-qty').value)||0,
+    detail:       document.getElementById('edit-detail').value,
+    emails:       document.getElementById('edit-emails').value,
+    capa:         document.getElementById('edit-capa').value,
+  };
+  try {
+    const {error}=await sb.from('complaints').update(updates).eq('comp_num',id);
+    if(error) throw error;
+    complaints[idx]={...complaints[idx],...updates,affectedQty:updates.affected_qty};
+    closeModal('fullEditModal'); applyFilters(); updateSKUFilterOptions(); showToast('Updated successfully');
+  } catch(err){ showToast('Update failed: '+err.message,'error'); }
+}
+
+// ========== CAPA & CLOSURE ==========
+function renderCAPATable(){
+  const div=document.getElementById('capa-div').value;
+  const status=document.getElementById('capa-status').value;
+  const filtered=complaints.filter(c=>(!div||c.div===div)&&(!status||c.status===status));
+  document.getElementById('capa-tbody').innerHTML=filtered.map(c=>{
+    const attachCount=c.capaAttachments?c.capaAttachments.length:0;
+    const attachIcon=attachCount?`<i class="fa-regular fa-paperclip" style="color:var(--primary);" title="${attachCount} file(s)"></i> ${attachCount}`:'—';
+    return `<tr class="${c.status==='closed'?'closed-row':''}">
+      <td>${c.compNum}</td><td>${c.date}</td><td>${c.name}</td>
+      <td>${c.cat}/${c.sku}</td><td>${badge(c.capa)}</td>
+      <td title="${c.rootCause||''}">${(c.rootCause||'—').substring(0,20)}</td>
+      <td title="${c.correction||''}">${(c.correction||'—').substring(0,20)}</td>
+      <td title="${c.corrective||''}">${(c.corrective||'—').substring(0,20)}</td>
+      <td>${c.closedDate||'—'}</td><td>${attachIcon}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="openCAPAModal('${c.compNum}')">CAPA</button>
+        ${attachCount?`<button class="btn btn-sm btn-secondary" onclick="viewCAPAAttachments('${c.compNum}')"><i class="fa-regular fa-eye"></i></button>`:''}
+        ${c.status==='open'?`<button class="btn btn-sm btn-success" onclick="closeComplaint('${c.compNum}')">Close</button>`:'<span class="badge badge-closed">Closed</span>'}
+      </td>
+    </tr>`;
+  }).join('');
+}
+function openCAPAModal(compNum){
+  const c=complaints.find(x=>x.compNum===compNum); if(!c) return;
+  document.getElementById('capa-comp-id').value=compNum;
+  document.getElementById('capa-root').value=c.rootCause||'';
+  document.getElementById('capa-correction').value=c.correction||'';
+  document.getElementById('capa-corrective').value=c.corrective||'';
+  const existingDiv=document.getElementById('capa-existing-attachments');
+  existingDiv.innerHTML=c.capaAttachments&&c.capaAttachments.length
+    ?'<strong>Existing:</strong> '+c.capaAttachments.map(a=>`<a href="${a.url}" target="_blank" class="capa-attachment-link"><i class="fa-regular fa-file"></i> ${a.name}</a>`).join('')
+    :'<span style="color:var(--text-muted);font-size:12px;">No attachments yet</span>';
+  document.getElementById('capa-files-input').value='';
+  document.getElementById('capa-new-preview').innerHTML='';
+  pendingCAPAFiles=[];
+  document.getElementById('capaModal').style.display='flex';
+}
+// Attach listener ONCE at page load
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('capa-files-input').addEventListener('change', function(e){
+    const files=e.target.files;
+    const previewDiv=document.getElementById('capa-new-preview');
+    previewDiv.innerHTML=''; pendingCAPAFiles=[];
+    Array.from(files).forEach(file=>{
+      pendingCAPAFiles.push(file);
+      const url=URL.createObjectURL(file);
+      const icon=file.type.startsWith('image/')
+        ?`<img src="${url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">`
+        :`<i class="fa-regular fa-file-pdf" style="font-size:24px;color:var(--danger);"></i>`;
+      const item=document.createElement('div');
+      item.style.cssText='display:flex;align-items:center;gap:6px;margin-top:4px;';
+      item.innerHTML=`${icon}<span style="font-size:12px;">${file.name}</span>`;
+      previewDiv.appendChild(item);
+    });
+  });
+});
+async function saveCAPADetails(){
+  const id=document.getElementById('capa-comp-id').value;
+  const idx=complaints.findIndex(c=>c.compNum===id); if(idx===-1) return;
+  const btn=document.querySelector('#capaModal .btn-primary');
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+  try {
+    let newAttachments=[];
+    if(pendingCAPAFiles.length>0){
+      setLoading(true,`Uploading ${pendingCAPAFiles.length} CAPA file(s)…`);
+      newAttachments=await uploadFiles(pendingCAPAFiles,`complaints/${id}/capa`);
+    }
+    const allAttachments=[...(complaints[idx].capaAttachments||[]),...newAttachments];
+    const updates={
+      root_cause:       document.getElementById('capa-root').value,
+      correction:       document.getElementById('capa-correction').value,
+      corrective:       document.getElementById('capa-corrective').value,
+      capa_attachments: allAttachments,
+      capa:             complaints[idx].capa==='pending'?'yes':complaints[idx].capa,
+    };
+    const {error}=await sb.from('complaints').update(updates).eq('comp_num',id);
+    if(error) throw error;
+    complaints[idx].rootCause       = updates.root_cause;
+    complaints[idx].correction      = updates.correction;
+    complaints[idx].corrective      = updates.corrective;
+    complaints[idx].capaAttachments = allAttachments;
+    complaints[idx].capa            = updates.capa;
+    closeModal('capaModal'); renderCAPATable();
+    showToast('CAPA saved'+(newAttachments.length?` – ${newAttachments.length} file(s) uploaded`:''));
+    pendingCAPAFiles=[];
+  } catch(err){
+    showToast('CAPA save failed: '+err.message,'error');
+  } finally {
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-save"></i> Save CAPA';
+    setLoading(false);
+  }
+}
+function viewCAPAAttachments(compNum){
+  const c=complaints.find(x=>x.compNum===compNum);
+  if(!c||!c.capaAttachments||!c.capaAttachments.length) return;
+  const win=window.open('','_blank');
+  const items=c.capaAttachments.map(a=>
+    a.type&&a.type.startsWith('image/')
+      ?`<div style="text-align:center"><img src="${a.url}" style="max-width:90%;max-height:80vh;border-radius:8px;"><div style="font-size:12px;color:#aaa;margin-top:4px;">${a.name}</div></div>`
+      :`<div style="padding:12px;background:#2d2d2d;border-radius:8px;"><a href="${a.url}" download="${a.name}" style="color:#818cf8;text-decoration:none;"><i style="margin-right:8px;">📄</i>${a.name}</a></div>`
+  ).join('');
+  win.document.write(`<html><head><title>${compNum} – CAPA Files</title><style>body{background:#1e1e1e;display:flex;flex-wrap:wrap;gap:16px;padding:24px;justify-content:center;font-family:sans-serif;color:white;}</style></head><body>${items}</body></html>`);
+}
+async function closeComplaint(id){
+  const idx=complaints.findIndex(c=>c.compNum===id);
+  if(!idx&&idx!==0) return;
+  if(complaints[idx].status==='closed'){showToast('Already closed','error');return;}
+  const closedDate=new Date().toISOString().split('T')[0];
+  try {
+    const {error}=await sb.from('complaints').update({status:'closed',closed_date:closedDate}).eq('comp_num',id);
+    if(error) throw error;
+    complaints[idx].closedDate=closedDate; complaints[idx].status='closed';
+    renderCAPATable(); showToast('Complaint closed ✅');
+  } catch(err){ showToast('Close failed: '+err.message,'error'); }
+}
+
+// ========== DASHBOARD ==========
+function applyDashboardFilters(){
+  const year=document.getElementById('dash-year').value;
+  const div=document.getElementById('dash-div').value;
+  const cat=document.getElementById('dash-cat').value;
+  currentDashboardData=complaints.filter(c=>{
+    if(year&&!c.date.startsWith(year)) return false;
+    if(div&&c.div!==div) return false;
+    if(cat&&c.cat!==cat) return false;
+    return true;
+  });
+  renderDashboard(currentDashboardData); updatePivotReport();
+}
+function renderDashboard(data){
+  const total=data.length;
+  const closed=data.filter(c=>c.status==='closed').length;
+  const open=total-closed;
+  const now=new Date(); const curM=now.getMonth(); const curY=now.getFullYear();
+  const thisM=data.filter(c=>new Date(c.date).getMonth()===curM&&new Date(c.date).getFullYear()===curY).length;
+  const prevM=curM===0?11:curM-1; const prevY=curM===0?curY-1:curY;
+  const prevMCount=data.filter(c=>{const d=new Date(c.date);return d.getMonth()===prevM&&d.getFullYear()===prevY;}).length;
+  document.getElementById('kpi-total').textContent=total;
+  document.getElementById('kpi-month').textContent=thisM;
+  document.getElementById('kpi-closed').textContent=closed;
+  document.getElementById('kpi-open').textContent=open;
+  const diff=thisM-prevMCount; const trend=document.getElementById('kpi-trend');
+  trend.textContent=diff>0?`▲ ${diff} vs last month`:diff<0?`▼ ${Math.abs(diff)} vs last month`:'— same as last month';
+  trend.className='trend '+(diff>0?'up':diff<0?'dn':'');
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  updateChart('trend','line',months,[{label:'Complaints',data:months.map((_,i)=>data.filter(c=>new Date(c.date).getMonth()===i).length),borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]);
+  const catData=groupBy(data,'cat');const catL=Object.keys(catData);
+  updateChart('cat','doughnut',catL,[{data:Object.values(catData),backgroundColor:palette(catL.length)}]);
+  const divData=groupBy(data,'div');const divL=Object.keys(divData);
+  updateChart('div','bar',divL,[{label:'Complaints',data:Object.values(divData),backgroundColor:'#4f46e5'}]);
+  updateChart('status','pie',['Closed','Open'],[{data:[closed,open],backgroundColor:['#10b981','#f59e0b']}]);
+  document.getElementById('dash-recent').innerHTML=data.slice(0,5).map(c=>`<tr><td>${c.compNum}</td><td>${c.date}</td><td>${c.name}</td><td>${c.cat}</td><td>${badge(c.capa)}</td><td>${c.status==='closed'?'<span class="badge badge-closed">Closed</span>':'<span class="badge badge-pending">Open</span>'}</td></tr>`).join('');
+  const skuCounts=groupBy(data,'sku');
+  const topSkus=Object.entries(skuCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('top-sku-table').innerHTML='<thead><tr><th>SKU</th><th>Complaints</th></tr></thead><tbody>'+topSkus.map(([sku,n])=>`<tr><td>${sku}</td><td>${n}</td></tr>`).join('')+'</tbody>';
+}
+function updatePivotReport(){
+  const data=currentDashboardData.length?currentDashboardData:complaints;
+  const dim=document.getElementById('pivot-dimension').value;
+  const measure=document.getElementById('pivot-measure').value;
+  const chartType=document.getElementById('pivot-chart-type').value;
+  const agg={};
+  data.forEach(c=>{
+    let key;
+    if(dim==='month'){const d=new Date(c.date);key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+    else key=c[dim]||'Unknown';
+    if(!agg[key])agg[key]={count:0,qty:0};
+    agg[key].count++; agg[key].qty+=c.affectedQty||0;
+  });
+  const labels=Object.keys(agg).sort();
+  const values=labels.map(k=>measure==='count'?agg[k].count:agg[k].qty);
+  if(charts.pivot) charts.pivot.destroy();
+  charts.pivot=new Chart(document.getElementById('pivot-chart'),{type:chartType,data:{labels,datasets:[{label:measure==='count'?'Complaints':'Affected QTY',data:values,backgroundColor:palette(labels.length)}]},options:{responsive:true,maintainAspectRatio:false}});
+  document.getElementById('pivot-header').innerHTML=`<tr><th>${dim==='month'?'Month':dim}</th><th>${measure==='count'?'Count':'Total QTY'}</th></tr>`;
+  document.getElementById('pivot-body').innerHTML=labels.map(k=>`<tr><td>${k}</td><td>${measure==='count'?agg[k].count:agg[k].qty.toFixed(0)}</td></tr>`).join('');
+}
+function resetDashboardFilters(){['dash-year','dash-div','dash-cat'].forEach(id=>document.getElementById(id).value='');applyDashboardFilters();}
+
+// ========== MOM REPORT ==========
+function renderMOM(){
+  const year=parseInt(document.getElementById('mom-year').value)||new Date().getFullYear();
+  const prev=year-1; const cat=document.getElementById('mom-cat').value;
+  const filtered=complaints.filter(c=>!cat||c.cat===cat);
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const curr=months.map((_,i)=>filtered.filter(c=>new Date(c.date).getFullYear()===year&&new Date(c.date).getMonth()===i).length);
+  const prevData=months.map((_,i)=>filtered.filter(c=>new Date(c.date).getFullYear()===prev&&new Date(c.date).getMonth()===i).length);
+  updateChart('mom','bar',months,[{label:`${year}`,data:curr,backgroundColor:'#4f46e5'},{label:`${prev}`,data:prevData,backgroundColor:'#cbd5e1'}]);
+  const skuMap={};
+  filtered.forEach(c=>{const d=new Date(c.date);const y=d.getFullYear();const m=d.getMonth();if(!skuMap[c.sku])skuMap[c.sku]={};if(!skuMap[c.sku][y])skuMap[c.sku][y]=Array(12).fill(0);skuMap[c.sku][y][m]++;});
+  const skus=Object.keys(skuMap).filter(s=>(skuMap[s][year]?.some(v=>v>0)||skuMap[s][prev]?.some(v=>v>0))).sort();
+  const empty=document.getElementById('mom-empty');const tbl=document.getElementById('mom-table');
+  if(!skus.length){tbl.style.display='none';empty.style.display='block';return;}
+  tbl.style.display='table';empty.style.display='none';
+  document.getElementById('mom-thead').innerHTML='<th>SKU</th>'+months.map(m=>`<th>${m}</th>`).join('')+'<th>Total</th><th>Trend</th>';
+  document.getElementById('mom-tbody').innerHTML=skus.map(sku=>{
+    const cd=skuMap[sku][year]||Array(12).fill(0);const pd=skuMap[sku][prev]||Array(12).fill(0);
+    let cells='';for(let i=0;i<12;i++){const cVal=cd[i];const pVal=pd[i];let disp=cVal>0?cVal:'';if(cVal>0){const arrow=cVal>pVal?' ▲':cVal<pVal?' ▼':'';const cls=cVal>pVal?'trend-up':cVal<pVal?'trend-dn':'trend-eq';disp=`<span class="${cls}">${cVal}${arrow}</span>`;}cells+=`<td>${disp}</td>`;}
+    const totCurr=cd.reduce((a,b)=>a+b,0);const totPrev=pd.reduce((a,b)=>a+b,0);
+    let trend='—';if(totCurr>0&&totPrev>0){const pct=Math.round((totCurr-totPrev)/totPrev*100);trend=`<span class="${pct>0?'trend-up':'trend-dn'}">${pct>0?'+'+pct:pct}%</span>`;}else if(totCurr>0)trend='<span class="trend-up">New</span>';
+    return `<tr><td>${sku.length>25?sku.substr(0,23)+'…':sku}</td>${cells}<td>${totCurr}</td><td>${trend}</td></tr>`;
+  }).join('');
+}
+
+// ========== EXCEL EXPORT ==========
+function exportExcel(){
+  try {
+    if(!complaints.length){showToast('No data to export','error');return;}
+    const data=complaints.map(c=>({
+      'ID':c.compNum,'Date':c.date,'Division':c.div,'Category':c.cat,'SKU':c.sku,
+      'Batch':c.batch,'MFG':c.mfg,'Qty':c.affectedQty,'Party':c.name,'Address':c.addr,
+      'CAPA':c.capa,'Root Cause':c.rootCause,'Correction':c.correction,'Corrective':c.corrective,
+      'Closed Date':c.closedDate||'','Status':c.status,
+      'Images': c.images&&c.images.length?c.images.map(i=>i.url).join('; '):'None',
+      'CAPA Files': c.capaAttachments&&c.capaAttachments.length?c.capaAttachments.map(a=>a.url).join('; '):'None',
+      'Details':c.detail
+    }));
+    const ws=XLSX.utils.json_to_sheet(data);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Complaints');
+    XLSX.writeFile(wb,`SDPL_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast('✅ Excel exported');
+  } catch(err){ showToast('Export failed: '+err.message,'error'); }
+}
+
+function updateSKUFilterOptions(){
+  const sel=document.getElementById('log-sku');const cur=sel.value;
+  const uniq=[...new Set(complaints.map(c=>c.sku).filter(s=>s&&s!=='N/A'))].sort();
+  sel.innerHTML='<option value="">All SKUs</option>';uniq.forEach(s=>sel.add(new Option(s,s)));
+  if(uniq.includes(cur)) sel.value=cur;
+}
+
+// ========== INIT ==========
+(async function init(){
+  const divs=['UNIT A','UNIT B','COOPERATIVE CHANNEL','CONFECTIONERY CHANNEL','LINE 2','INGREDIENT BUSINESS','CONVERSION','LOVEBIRDS','PARLOR','SDC'];
+  ['f-div','log-div','dash-div','capa-div','edit-div'].forEach(id=>{const s=document.getElementById(id);if(s) divs.forEach(d=>s.add(new Option(d,d)));});
+  ['f-cat','log-cat','dash-cat','mom-cat','edit-cat'].forEach(id=>{const s=document.getElementById(id);if(s) Object.keys(CATS).forEach(c=>s.add(new Option(c,c)));});
+  const yr=new Date().getFullYear();
+  ['dash-year','mom-year'].forEach(id=>{const s=document.getElementById(id);for(let y=yr;y>=yr-4;y--) s.add(new Option(y,y));});
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  updateComplaintID(); setCapa('pending');
+  document.getElementById('mom-year').value=yr;
+  // Data loads only after admin unlocks — public users only see the Register form
+  // loadComplaints() is called inside unlockAdminUI()
+})();
+// ===== ADMIN PASSWORD SYSTEM =====
+// Change this password to whatever you want
+const ADMIN_PASSWORD = 'SDPL@Admin2026';
+let isAdmin = false;
+
+function showAdminModal() {
+  const errEl = document.getElementById('admin-pw-error');
+  const logoutSection = document.getElementById('admin-logout-section');
+  const pwInput = document.getElementById('admin-pw-input');
+  errEl.textContent = '';
+  pwInput.value = '';
+  // If already admin, show the logout option
+  if (isAdmin) {
+    logoutSection.style.display = 'block';
+    pwInput.closest('.form-group').style.display = 'none';
+    document.querySelector('#adminModal .btn-primary').style.display = 'none';
+  } else {
+    logoutSection.style.display = 'none';
+    pwInput.closest('.form-group').style.display = 'block';
+    document.querySelector('#adminModal .btn-primary').style.display = 'inline-flex';
+  }
+  document.getElementById('adminModal').style.display = 'flex';
+  if (!isAdmin) setTimeout(() => pwInput.focus(), 100);
+}
+
+function checkAdminPassword() {
+  const input = document.getElementById('admin-pw-input').value;
+  const errEl = document.getElementById('admin-pw-error');
+  if (input === ADMIN_PASSWORD) {
+    isAdmin = true;
+    closeModal('adminModal');
+    unlockAdminUI();
+    showToast('✅ Admin mode unlocked');
+    // Load data now that admin has access
+    loadComplaints();
+  } else {
+    errEl.textContent = 'Incorrect password. Please try again.';
+    document.getElementById('admin-pw-input').value = '';
+    document.getElementById('admin-pw-input').focus();
+  }
+}
+
+function adminLogout() {
+  isAdmin = false;
+  closeModal('adminModal');
+  lockAdminUI();
+  // Clear complaint data from memory so public can't access via console
+  complaints = [];
+  currentDashboardData = [];
+  // Switch back to register tab
+  switchTab('form');
+  showToast('Admin mode locked', 'error');
+}
+
+function unlockAdminUI() {
+  // Show all admin tabs
+  document.querySelectorAll('.admin-tab').forEach(t => t.style.display = 'flex');
+  // Show export button
+  document.getElementById('export-btn').style.display = 'inline-flex';
+  // Style the Admin button as unlocked
+  const btn = document.getElementById('admin-unlock-btn');
+  btn.innerHTML = '<i class="fa-solid fa-unlock"></i> Admin';
+  btn.classList.add('unlocked');
+  // Add admin badge to header
+  if (!document.getElementById('admin-badge')) {
+    const badge = document.createElement('span');
+    badge.id = 'admin-badge';
+    badge.className = 'admin-badge';
+    badge.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Admin Mode';
+    btn.parentElement.insertBefore(badge, btn);
+  }
+}
+
+function lockAdminUI() {
+  document.querySelectorAll('.admin-tab').forEach(t => t.style.display = 'none');
+  document.getElementById('export-btn').style.display = 'none';
+  const btn = document.getElementById('admin-unlock-btn');
+  btn.innerHTML = '<i class="fa-solid fa-lock"></i> Admin';
+  btn.classList.remove('unlocked');
+  const badge = document.getElementById('admin-badge');
+  if (badge) badge.remove();
+}
+
+// ── Override switchTab to block non-admins ──────────────────────────────────
+const _adminOnlyTabs = ['log', 'capa', 'dash', 'mom'];
+const _originalSwitchTab = switchTab;
+function switchTab(t) {
+  if (_adminOnlyTabs.includes(t) && !isAdmin) {
+    showToast('Admin access required. Click the Admin button to unlock.', 'error');
+    return;
+  }
+  _originalSwitchTab(t);
+}
+
+</script>
+</body>
+</html>
